@@ -463,11 +463,13 @@
 
         }
         console.log("searchAvailibility Request: ", request)
-        axios.post(`/${process.env.VUE_APP_SEARCH_AVAILABILITY}`, request, {
+        axios.post(`/${process.env.VUE_APP_SEARCHAVAILABILITY}`, request, {
           //withCredentials: true,
           //credentials: 'include',
           headers: {//'Authorization': 'Bearer ' + this.token,
             'Content-Type' : 'application/json',
+            'Accept' : 'application/json',
+            'Authorization' : `Bearer ${this.ls.get('token')}`,
             // 'Accept-Language' : this.language.data
           }
         })
