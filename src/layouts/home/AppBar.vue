@@ -463,7 +463,7 @@
 
         }
         console.log("searchAvailibility Request: ", request)
-        axios.post(`/${process.env.VUE_APP_SEARCHAVAILABILITY}`, request, {
+        axios.post(`${process.env.VUE_APP_HOSTVSAPI}/${process.env.VUE_APP_SEARCHAVAILABILITY}`, request, {
           //withCredentials: true,
           //credentials: 'include',
           headers: {//'Authorization': 'Bearer ' + this.token,
