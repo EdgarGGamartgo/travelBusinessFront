@@ -89,11 +89,11 @@
         >
           <template v-slot:activator="{ on }">
             <v-text-field
-              v-model="dateFormatted"
+              v-model="computedDateFormatted"
               label="Check-in"
               hint="Formato MM/DD/YYYY "
               persistent-hint
-              @blur="date = parseDate(dateFormatted)"
+
               v-on="on"
             ></v-text-field>
           </template>
@@ -322,6 +322,9 @@
       this.validSession()
       },
     methods: {
+      callSearchAvailabilityWS2() {
+        console.log("Un Moment")
+      },
       adjustHeader() {
         for(var i = 0; i < this.itemsBar.length; i++) {
           if(this.itemsBar[i].toUpperCase() == "SIGN UP") {
@@ -461,7 +464,7 @@
           kids: this.selectedKids,
           rooms: this.selectedRooms
 
-        }
+        }//
         console.log("searchAvailibility Request: ", request)
         axios.post(`${process.env.VUE_APP_HOSTVSAPI}/${process.env.VUE_APP_SEARCHAVAILABILITY}`, request, {
           //withCredentials: true,
@@ -529,6 +532,7 @@
               break;
             case "BUSCAR":
               this.enableLoader = true
+              console.log("Un Moment Premiere")
               this.callSearchAvailabilityWS()
               break;
             default:
