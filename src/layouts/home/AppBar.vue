@@ -305,8 +305,10 @@
       destiny: null,
       itemsBar: [
         'Home',
+        'Quienes somos?',
+        'Contactos',
         'Log In',
-        'Sign Up'
+        'Sign Up',
       ],
     }),
     computed: {
@@ -417,6 +419,8 @@
                 this.$myStore.commit('setLoggedUser', {email:"",name:"",id:""})
                 this.itemsBar = [
                   'Home',
+                  'Quienes somos?',
+                  'Contactos',
                   'Log In',
                   'Sign Up'
                 ]
@@ -453,6 +457,9 @@
           extraServices = "Ninguno"
         } else {
           extraServices = this.extraServices.join(", ");
+        }
+        if(this.destiny == "Acapulco") {
+          this.destiny = 1
         }
         const request = {
           destino: this.destiny,
