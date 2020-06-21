@@ -473,12 +473,13 @@
 
         }//
         console.log("searchAvailibility Request: ", request)
-        axios.post(`${process.env.VUE_APP_HOSTVSAPI}/${process.env.VUE_APP_SEARCHAVAILABILITY}`, request, {
+        axios.get(`${process.env.VUE_APP_HOSTVSAPI}/${process.env.VUE_APP_SEARCHAVAILABILITY}`,  {
           //withCredentials: true,
           //credentials: 'include',
           headers: {//'Authorization': 'Bearer ' + this.token,
-            'Content-Type' : 'application/json',
-            'Accept' : 'application/json',
+          //  'Content-Type' : 'application/json',
+        //    'Accept' : 'application/json',
+            "s-a": JSON.stringify(request),
             'Authorization' : `Bearer ${this.ls.get('token')}`,
             // 'Accept-Language' : this.language.data
           }
