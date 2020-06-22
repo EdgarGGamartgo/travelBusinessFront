@@ -1,6 +1,23 @@
 <template>
   <div>
-
+ <v-dialog v-model="languageSelector" scrollable max-width="300px">
+      <v-card>
+        <v-card-title>Idioma</v-card-title>
+        <v-divider></v-divider>
+        <v-card-text style="height: 200px;">
+          <v-radio-group v-model="selectedLang" column>
+            <v-radio label="Español" value="MXN"></v-radio>         
+            <v-radio label="Français" value="EUR"></v-radio>
+            <v-radio label="English" value="USD"></v-radio>
+          </v-radio-group>
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-btn color="blue darken-1" text @click="languageSelector = false">Cerrar</v-btn>
+          <v-btn color="blue darken-1" text @click="currencyWS = selectedLang;languageSelector = false">Aceptar</v-btn>
+        </v-card-actions>
+      </v-card>
+ </v-dialog>
     <!--Starting Modal-->
         <v-dialog
         overlay-color="red"
@@ -262,7 +279,9 @@
     },
 
     data: (vm) => ({
-
+      currencyWS: "",
+      selectedLang: "",
+      languageSelector: false,
       enableLoader: false,
       ls: new SecureLS({ encodingType: "aes" }),
       userName: "",
@@ -309,6 +328,8 @@
         'Contactos',
         'Log In',
         'Sign Up',
+        'Language',
+
       ],
     }),
     computed: {
@@ -324,6 +345,9 @@
       this.validSession()
       },
     methods: {
+      language() {
+          this.languageSelector = true
+      },
       callSearchAvailabilityWS2() {
         console.log("Un Moment")
       },
@@ -422,7 +446,8 @@
                   'Quienes somos?',
                   'Contactos',
                   'Log In',
-                  'Sign Up'
+                  'Sign Up',
+                  'Language'
                 ]
               }
               console.log("Successful Log out from API: ",response)
@@ -469,7 +494,8 @@
           checkOut: this.date2,
           adults: this.selectedAdults,
           kids: this.selectedKids,
-          rooms: this.selectedRooms
+          rooms: this.selectedRooms,
+          currency: this.currencyWS
 
         }//
         console.log("searchAvailibility Request: ", request)
@@ -579,6 +605,10 @@
           case "LOG OUT":
             console.log("Which modal should I open? ", name)
             this.logOut()
+            break;
+          case "Language":
+            console.log("Which modal should I open? ", name)
+            this.language()
             break;
           case "Log In":
             console.log("Which modal should I open? ", name)
