@@ -2,7 +2,7 @@
   <div>
  <v-dialog v-model="languageSelector" scrollable max-width="300px">
       <v-card>
-        <v-card-title>Idioma</v-card-title>
+        <v-card-title>{{$t('language.generals.lang')}}</v-card-title>
         <v-divider></v-divider>
         <v-card-text style="height: 200px;">
           <v-radio-group v-model="selectedLang" column>
@@ -14,7 +14,7 @@
         <v-divider></v-divider>
         <v-card-actions>
           <v-btn color="blue darken-1" text @click="languageSelector = false">Cerrar</v-btn>
-          <v-btn color="blue darken-1" text @click="currencyWS = selectedLang;languageSelector = false">Aceptar</v-btn>
+          <v-btn color="blue darken-1" text @click="currencyWS = selectedLang;languageSelector = false; setLocale(selectedLang)">Aceptar</v-btn>
         </v-card-actions>
       </v-card>
  </v-dialog>
@@ -270,6 +270,7 @@
 <script>
   import  axios from 'axios';
   import SecureLS from "secure-ls";
+  import i18n from "./../../plugins/i18n";
 
   export default {
     name: 'HomeAppBar',
@@ -328,7 +329,7 @@
         'Contactos',
         'Log In',
         'Sign Up',
-        'Language',
+        i18n.t('language.generals.lang'),
 
       ],
     }),
@@ -345,6 +346,36 @@
       this.validSession()
       },
     methods: {
+    
+    setLocale(locale) {
+      
+      console.log("Whats is LOCALE: ", locale)
+    if (locale == undefined) {
+      locale = 'es'
+    } else if(locale == "MXN") {
+      locale = 'es'
+    } else if(locale == "USD") {
+      locale = 'en'
+    } else if(locale == "EUR") {
+      locale = 'fr'
+    }
+      console.log("Whats is LOCALE II: ", locale)
+
+    this.$i18n.locale = locale;
+       let newItems = this.itemsBar.map((item) => {
+              if(item == 'Language' || item == 'Langage' || item == 'Lenguaje') {
+                item = i18n.t('language.generals.lang')
+                return item
+              } else {
+                return item
+              }
+            })
+             
+            console.log("newItems: ", newItems)
+            this.itemsBar = newItems
+    this.ls.set("Language", { data: locale });
+
+      },
       language() {
           this.languageSelector = true
       },
@@ -447,7 +478,7 @@
                   'Contactos',
                   'Log In',
                   'Sign Up',
-                  'Language'
+                  i18n.t('language.generals.lang')
                 ]
               }
               console.log("Successful Log out from API: ",response)
@@ -606,8 +637,9 @@
             console.log("Which modal should I open? ", name)
             this.logOut()
             break;
-          case "Language":
+          case 'Language': case 'Langage': case 'Lenguaje':
             console.log("Which modal should I open? ", name)
+         
             this.language()
             break;
           case "Log In":
