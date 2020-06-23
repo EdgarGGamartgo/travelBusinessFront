@@ -346,6 +346,22 @@
       this.validSession()
       },
     methods: {
+
+      getZones(){
+          axios.get(`${process.env.VUE_APP_HOSTVSAPI}${process.env.VUE_APP_GETZONES}`,  {
+          headers: {
+          //  "s-a": JSON.stringify(request),
+            'Authorization' : `Bearer ${this.ls.get('token')}`,
+            // 'Accept-Language' : this.language.data
+          }
+        })
+          .then( response => {
+            console.log("GetZones Response: ",response)
+          })
+          .catch( error => {
+            console.log("GetZones Error: ",error)
+          })
+      },
     
     setLocale(locale) {
       
@@ -657,6 +673,7 @@
             this.modalTitle = "Buscar disponibilidad"
             this.modalButtonOk = "BUSCAR"
             this.dialog2 = true
+            this.getZones()
             console.log("Which modal should I open? ", name)
             break;
           default:
