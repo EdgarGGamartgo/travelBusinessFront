@@ -542,7 +542,7 @@
           adults: this.selectedAdults,
           kids: this.selectedKids,
           rooms: this.selectedRooms,
-          currency: this.currencyWS
+          currency: this.currencyWS == "" ? "MXN" : this.currencyWS
 
         }//
         console.log("searchAvailibility Request: ", request)
