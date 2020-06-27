@@ -14,7 +14,7 @@
         <v-divider></v-divider>
         <v-card-actions>
           <v-btn color="blue darken-1" text @click="languageSelector = false">Cerrar</v-btn>
-          <v-btn color="blue darken-1" text @click="currencyWS = selectedLang;languageSelector = false; setLocale(selectedLang)">Aceptar</v-btn>
+          <v-btn color="blue darken-1"  text @click="currencyWS = selectedLang;languageSelector = false; setLocale(selectedLang)">Aceptar</v-btn>
         </v-card-actions>
       </v-card>
  </v-dialog>
@@ -35,11 +35,49 @@
         </v-btn>
       </template>
       <v-card>
-        <v-card-title>
+        <div style="float: right;">
+        <v-tabs
+          class="hidden-sm-and-down"
+          optional
+        >
+          <v-tab
+            v-for="(name, i) in itemsModal"
+            :key="i"
+           
+            :ripple="false"
+            active-class="text--primary"
+            class="font-weight-bold"
+            min-width="96"
+            text
+            @click="goFront(name)"
+          ><!-- :exact="name === 'Home'" -->
+            <!-- :to="{ name }" -->
+           {{ name }} 
+            <!-- TEST -->
+          </v-tab>
+        </v-tabs>
+      </div><br><br>
+        <v-card-title >
           <span class="headline">{{modalTitle}}</span>
         </v-card-title>
  <v-content>
-      <v-container
+    <v-container v-if="paymentContent"
+        class="fill-height"
+        fluid
+      >paymentContent</v-container>
+    <v-container v-if="cardsContent"
+        class="fill-height"
+        fluid
+      >cardsContent</v-container>
+   <v-container v-if="historyContent"
+        class="fill-height"
+        fluid
+      >historyContent</v-container>
+      <v-container v-if="creditsContent"
+        class="fill-height"
+        fluid
+      >creditsContent</v-container>
+      <v-container v-if="avaiContent"
         class="fill-height"
         fluid
       >
@@ -172,6 +210,17 @@
             label="Habitaciones"
           ></v-autocomplete>
       </v-col>
+      <v-row
+       align="center"
+          justify="center">
+         <v-progress-circular 
+            v-if="enableLoader"
+            :size="70"
+            :width="7"
+            color="red"
+            indeterminate
+          ></v-progress-circular>
+          </v-row>
     </v-row>
       <!-- <v-btn block color="red darken-4" dark @click="searchAvailability">Buscar disponibilidad</v-btn> -->
 
@@ -193,14 +242,15 @@
     </v-content>
          <v-card-actions>
           <v-spacer />
-          <v-btn
+          <v-btn 
             color="green darken-1"
             text
             @click="dialog2 = false"
           >
-            Cerrar
+            Cerrar 
           </v-btn>
           <v-btn
+           v-if="avaiContent"
             color="green darken-1"
             text
             @click="hitService()"
@@ -251,7 +301,8 @@
             @click="goFront(name)"
           >
             <!-- :to="{ name }" -->
-            {{ name }}
+           {{ name }} 
+            <!-- TEST -->
           </v-tab>
         </v-tabs>
       </div>
@@ -280,6 +331,11 @@
     },
 
     data: (vm) => ({
+      paymentContent: false,
+      cardsContent: false,
+       avaiContent: false,
+       creditsContent: false,
+       historyContent: false,
       currencyWS: "",
       selectedLang: "",
       languageSelector: false,
@@ -323,6 +379,10 @@
       dialog2: false,
       itemsDestiny: ['Cancún', 'Los Cabos', 'Acapulco'],
       destiny: null,
+      itemsModal: [
+        'Historial',
+        'Créditos'
+      ],
       itemsBar: [
         'Home',
         'Quienes somos?',
@@ -524,6 +584,7 @@
         arrayMove(this.itemsBar, this.itemsBar.length - 1, 2)
       },
       callSearchAvailabilityWS(){
+            this.enableLoader = true
         let extraServices = ""
         if(this.extraServices == null) {
           extraServices = "Ninguno"
@@ -560,12 +621,14 @@
           .then( response => {
             console.log("searchAvailibility Response: ",response)
             this.enableLoader = false
-            this.dialog2 = false
+           // this.dialog2 = false
+            this.avaiContent = false
+            this.cardsContent = true
           })
           .catch( error => {
             console.log("searchAvailibility Error: ",error)
             this.enableLoader = false
-            this.dialog2 = false
+         //   this.dialog2 = false
           })
       },
       callLogInWS() {
@@ -666,14 +729,40 @@
             this.modalTitle = "Log In"
             this.modalButtonOk = "OK"
             this.dialog2 = true
+                      this.avaiContent = true
+            this.historyContent = false
+            this.cardsContent = false
+            this.paymentContent = false
+            this.creditsContent = false
             break;
           case "Mis viajes":
+            this.avaiContent = true
+            this.historyContent = false
+            this.cardsContent = false
+            this.paymentContent = false
+            this.creditsContent = false
             this.dynamicModalWidth = "1600px"
             this.logInContent = false
             this.modalTitle = "Buscar disponibilidad"
             this.modalButtonOk = "BUSCAR"
             this.dialog2 = true
             this.getZones()
+            console.log("Which modal should I open? ", name)
+            break;
+            case "Historial":
+            this.historyContent = true
+            this.avaiContent = false
+            this.creditsContent = false
+            this.cardsContent = false
+            this.paymentContent = false
+            console.log("Which modal should I open? ", name)
+            break;
+            case "Créditos":
+              this.avaiContent = false
+            this.historyContent = false
+            this.cardsContent = false
+            this.paymentContent = false
+            this.creditsContent = true
             console.log("Which modal should I open? ", name)
             break;
           default:
