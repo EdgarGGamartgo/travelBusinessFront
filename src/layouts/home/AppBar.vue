@@ -41,6 +41,7 @@
           optional
         >
           <v-tab
+          v-if="modalBar"
             v-for="(name, i) in itemsModal"
             :key="i"
            
@@ -57,7 +58,7 @@
           </v-tab>
         </v-tabs>
       </div><br><br>
-        <v-card-title >
+        <v-card-title v-if="avaiContent || logHeaders">
           <span class="headline">{{modalTitle}}</span>
         </v-card-title>
  <v-content>
@@ -65,18 +66,110 @@
         class="fill-height"
         fluid
       >paymentContent</v-container>
-    <v-container v-if="cardsContent"
-        class="fill-height"
-        fluid
-      >cardsContent</v-container>
+    <v-container v-if="cardsContent"      >
+    <v-carousel 
+    interval="10000"
+    cycle
+    hide-delimiters
+    v-model="model">
+      <v-carousel-item
+        v-for="(hotel, i) in availibilityResponse"
+        :key="hotel"
+      >
+     <v-card
+     light
+    class="mx-auto"
+    max-width="800"
+  >
+    <v-img
+      class="white--text align-end"
+      height="200px"
+      src="./../../assets/acapulcoEstrella.jpg"
+    >
+      <v-card-title><strong v-if="hotel.hotelName == value">HOTEL PREFERIDO: </strong>  {{ hotel.hotelName }}</v-card-title>
+    </v-img>
+              <v-card-subtitle class="pb-0">Costo total por {{ selectedRooms }} {{ selectedRooms == 1 ? "habitación" : "habitaciones" }}: $ {{ globalFunctions.numberFormat(hotel.totalCost, 2, '.', ',') }} {{ hotel.currency }}</v-card-subtitle>
+
+    <v-card-text class="text--primary">
+      <div>{{ hotel.arrivalDate }} - {{ hotel.departureDate }}</div>
+
+      <div>Total de noches: {{ hotel.totalNights }}</div>
+      <div>Máximo de adultos por habitación: {{ hotel.maxAdults }}. Máximo de niños por habitación: {{ hotel.maxKids }}.</div>
+      <div>Máximo de habitaciónes disponibles: {{ hotel.maxRooms }}.</div>
+      <div><strong>Reserva al 55 55 55 55 55 o con PayPal en la sección de abajo.</strong></div>
+    </v-card-text>
+
+
+<!---->
+<v-col cols="12">
+        <v-row justify="center">
+          <v-col
+            cols="6"
+            md="6"
+          >
+      <div><strong>Reservar con costo total: $ {{ globalFunctions.numberFormat(hotel.totalCost, 2, '.', ',') }} {{ hotel.currency }}</strong></div>
+       <PayPal
+        :amount="hotel.totalCost"
+        :currency="hotel.currency"
+        :client="credentials"
+        env="production">
+      </PayPal>
+          </v-col>
+
+          <v-col
+            cols="6"
+            md="6"
+          >
+      <div
+                 v-if="totalCredits < hotel.totalCost"
+      ><strong>Descontar mis $ {{ globalFunctions.numberFormat(totalCredits, 2, '.', ',') }} {{ hotel.currency }} de créditos</strong></div>
+                 <PayPal
+                 v-if="totalCredits < hotel.totalCost"
+        :amount="hotel.totalCost - totalCredits"
+        :currency="hotel.currency"
+        :client="credentials"
+        env="production">
+      </PayPal>
+          </v-col>
+        </v-row>
+      </v-col>
+<!---->
+ 
+   
+  </v-card>
+      </v-carousel-item>
+    </v-carousel>
+      </v-container>
    <v-container v-if="historyContent"
         class="fill-height"
         fluid
-      >historyContent</v-container>
+      >
+      <v-row
+      align="center"
+          justify="center">
+                <v-data-table
+       
+    :headers="headers"
+    :items="desserts"
+    :items-per-page="5"
+    class="elevation-1"
+  ></v-data-table>
+      </v-row>
+      </v-container>
       <v-container v-if="creditsContent"
         class="fill-height"
         fluid
-      >creditsContent</v-container>
+      > <v-row
+      align="center"
+          justify="center">
+          Total de créditos : $ {{ globalFunctions.numberFormat(totalCredits, 2, '.', ',') }} {{ currencyWS }}
+                <v-data-table
+    :headers="headersCredits"
+    :items="creditsItems"
+    :items-per-page="5"
+    class="elevation-1"
+  ></v-data-table>
+      </v-row></v-container>
       <v-container v-if="avaiContent"
         class="fill-height"
         fluid
@@ -243,6 +336,7 @@
          <v-card-actions>
           <v-spacer />
           <v-btn 
+          v-if="avaiContent"
             color="green darken-1"
             text
             @click="dialog2 = false"
@@ -322,15 +416,74 @@
   import  axios from 'axios';
   import SecureLS from "secure-ls";
   import i18n from "./../../plugins/i18n";
-
+  import * as GlobalFunctions from './../../utils/GlobalFunctions';
+  import PayPal from 'vue-paypal-checkout'
   export default {
     name: 'HomeAppBar',
 
     components: {
+       PayPal,
       HomeDrawer: () => import('./Drawer'),
     },
 
     data: (vm) => ({
+      globalFunctions: GlobalFunctions,
+      zones: [],
+      totalCredits: 0,
+      headersCredits: [
+          {
+            text: 'Tipo de crédito',
+            align: 'start',
+            sortable: false,
+            value: 'name',
+          },
+          { text: 'Importe', value: 'calories' },
+          { text: 'Generado', value: 'fat' },
+          // { text: 'Destino', value: 'carbs' },
+          // { text: 'Costo total', value: 'protein' },
+          // { text: 'Créditos', value: 'iron' },
+        ],
+      creditsItems:[
+       
+        ],
+        headers: [
+          {
+            text: 'Estancia',
+            align: 'start',
+            sortable: false,
+            value: 'name',
+          },
+          { text: 'Llegada', value: 'calories' },
+          { text: 'Salida', value: 'fat' },
+      //    { text: 'Destino', value: 'carbs' },
+          { text: 'Costo total', value: 'protein' },
+          { text: 'Noches', value: 'iron' },
+        ],
+        desserts: [
+      
+        ],
+      credentials: {
+        sandbox: process.env.VUE_APP_PAYPALP,
+        production: process.env.VUE_APP_PAYPALP
+      },
+      availibilityResponse: [],
+      logHeaders: false,
+      modalBar: false,
+        model: 0,
+        colors: [
+          'indigo',
+          'warning',
+          'pink darken-2',
+          'red lighten-1',
+          'deep-purple accent-4',
+        ],
+        slides: [
+          'First',
+          'Second',
+          'Third',
+          'Fourth',
+          'Fifth',
+        ],
       paymentContent: false,
       cardsContent: false,
        avaiContent: false,
@@ -373,13 +526,14 @@
       menu2: false,
           extraServicesAvailable: ['Renta de auto', 'Vuelo de avión'],
       extraServices: null,
-      items: ['Hotel 1', 'Hotel 2', 'Hotel 3', 'Hotel 4'],
+      items: [],
       value: null,
       drawer: null,
       dialog2: false,
-      itemsDestiny: ['Cancún', 'Los Cabos', 'Acapulco'],
+      itemsDestiny: [],
       destiny: null,
       itemsModal: [
+        'Disponibilidad',
         'Historial',
         'Créditos'
       ],
@@ -404,9 +558,101 @@
     created() {
       console.log("Token from store: ", this.$myStore.getters.getToken)
       this.validSession()
+      this.getCredits()
+      },
+      watch: {
+          destiny() {
+                for(var i = 0; i < this.zones.length; i++) {
+                  if(this.destiny == this.zones[i].nombre) {
+                    this.getHotels(this.zones[i].id)
+                  }
+                }
+          }
       },
     methods: {
+      discountPrice(){
 
+      },
+      getCredits() {
+
+         axios.get(`${process.env.VUE_APP_HOSTVSAPI}/${process.env.VUE_APP_GETCREDITS}`,  {
+          headers: {
+            "g-c": JSON.stringify({
+              userId: this.ls.get('userId'), 
+              currency: this.currencyWS == "" ? "MXN" : this.currencyWS
+              }),
+            'Authorization' : `Bearer ${this.ls.get('token')}`,
+          }
+        })
+          .then( response => {
+            console.log("GetCredits Response: ",response)
+            this.creditsItems = []
+            this.totalCredits = 0
+            for(var i = 0; i < response.data.data.length; i++) {
+              this.creditsItems.push({
+                name: response.data.data[i].creditType.TipoCredito,
+                calories: `$ ${this.globalFunctions.numberFormat(response.data.data[i].amount, 2, '.', ',')} ${response.data.data[i].currency}`,
+                fat: response.data.data[i].creditType.created_at,
+              })
+              console.log("CRedits amount: ", this.globalFunctions.numberFormat(response.data.data[i].amount))
+              this.totalCredits += Number(response.data.data[i].amount)
+            }
+
+          })
+          .catch( error => {
+            console.log("GetCredits Error: ",error)
+          })
+      },
+      getTravelHistory() {
+       axios.get(`${process.env.VUE_APP_HOSTVSAPI}/${process.env.VUE_APP_GETHISTORY}`,  {
+          headers: {
+            "g-t-h": JSON.stringify({
+              userId: this.ls.get('userId'),
+              currency: this.currencyWS == "" ? "MXN" : this.currencyWS
+              }),
+            'Authorization' : `Bearer ${this.ls.get('token')}`,
+          }
+        })
+          .then( response => {
+            console.log("GetTravelHistory Response: ",response)
+           this.desserts = []
+           for(var i = 0; i < response.data.data.length; i++) {
+             this.desserts.push({
+               name: response.data.data[i].hotel,
+               calories: response.data.data[i].checkIn,
+               fat: response.data.data[i].checkOut,
+               protein: `$ ${this.globalFunctions.numberFormat(response.data.data[i].totalCOst, 2, '.', ',')} ${response.data.data[i].currency}`,
+               iron: response.data.data[i].totalNights,
+             })
+           }
+          })
+          .catch( error => {
+            console.log("GetTravelHistory Error: ",error)
+          })
+      },
+      getHotels(destinyId) {
+        let request = {
+          destino: destinyId
+        }
+       axios.get(`${process.env.VUE_APP_HOSTVSAPI}/${process.env.VUE_APP_GETHOTELS}`,  {
+          headers: {
+            "g-h": JSON.stringify(request),
+            'Authorization' : `Bearer ${this.ls.get('token')}`,
+            // 'Accept-Language' : this.language.data
+          }
+        })
+          .then( response => {
+            console.log("GetHotels Response: ",response)
+            this.apiHotels = response.data.data
+            this.items = []
+            for(var i = 0; i < this.apiHotels.length; i++){
+              this.items.push(this.apiHotels[i].nombreEspacio)
+            }
+          })
+          .catch( error => {
+            console.log("GetHotels Error: ",error)
+          })
+      },
       getZones(){
           axios.get(`${process.env.VUE_APP_HOSTVSAPI}${process.env.VUE_APP_GETZONES}`,  {
           headers: {
@@ -417,6 +663,11 @@
         })
           .then( response => {
             console.log("GetZones Response: ",response)
+            this.zones = response.data.data
+            this.itemsDestiny = []
+            for(var i = 0; i < this.zones.length; i++){
+              this.itemsDestiny.push(this.zones[i].nombre)
+            }
           })
           .catch( error => {
             console.log("GetZones Error: ",error)
@@ -624,6 +875,7 @@
            // this.dialog2 = false
             this.avaiContent = false
             this.cardsContent = true
+            this.availibilityResponse = response.data.data
           })
           .catch( error => {
             console.log("searchAvailibility Error: ",error)
@@ -652,6 +904,7 @@
                 this.$myStore.commit('setLoggedUser', response.data.userData)
                 this.ls.set('token', response.data.success.token)
                 this.ls.set('userName', response.data.userData.name)
+                this.ls.set('userId', response.data.userData.id)
                 this.adjustHeader()
             }
             this.enableLoader = false
@@ -702,6 +955,7 @@
       goFront (name) {
         switch(name){
           case "Sign Up":
+            this.modalBar = false
             console.log("Which modal should I open? ", name)
             this.modalTitle = "SIGN UP"
             this.modalButtonOk = "ACCEPTAR"
@@ -722,6 +976,8 @@
             this.language()
             break;
           case "Log In":
+            this.logHeaders = true
+            this.modalBar = false
             console.log("Which modal should I open? ", name)
             this.dynamicModalWidth = "800px"
             this.logInContent = true
@@ -736,6 +992,8 @@
             this.creditsContent = false
             break;
           case "Mis viajes":
+            this.logHeaders = false
+            this.modalBar = true
             this.avaiContent = true
             this.historyContent = false
             this.cardsContent = false
@@ -749,8 +1007,23 @@
             this.getZones()
             console.log("Which modal should I open? ", name)
             break;
+            case "Disponibilidad":
+            this.dynamicModalWidth = "1600px"
+            this.logHeaders = false
+            this.modalBar = true
+            this.historyContent = false
+            this.avaiContent = true
+            this.creditsContent = false
+            this.cardsContent = false
+            this.paymentContent = false
+            console.log("Which modal should I open? ", name)
+              break;
             case "Historial":
+              this.getTravelHistory()
+              this.logHeaders = false
+            this.modalBar = true
             this.historyContent = true
+            this.dynamicModalWidth = "600px"
             this.avaiContent = false
             this.creditsContent = false
             this.cardsContent = false
@@ -758,6 +1031,10 @@
             console.log("Which modal should I open? ", name)
             break;
             case "Créditos":
+              this.getCredits()
+            this.dynamicModalWidth = "600px"
+              this.logHeaders = false
+            this.modalBar = true
               this.avaiContent = false
             this.historyContent = false
             this.cardsContent = false

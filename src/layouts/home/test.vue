@@ -5,7 +5,23 @@
           <v-icon>mdi-home</v-icon>
         </v-list-item-icon>
           <span class="headline">{{modalTitle}}</span>
-creditsContent historyContent
+
+          
+  <v-sheet
+          :color="color"
+          height="100%"
+          tile
+        >
+          <v-row
+            class="fill-height"
+            align="center"
+            justify="center"
+          >
+            <div class="display-3">Slide {{ i + 1 }}</div>
+          </v-row>
+        </v-sheet>
+
+
         <v-list-item-title>Home</v-list-item-title>
       </v-list-item>
 
