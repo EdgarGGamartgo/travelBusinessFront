@@ -88,7 +88,7 @@
     >
       <v-card-title><strong v-if="hotel.hotelName == value">HOTEL PREFERIDO: </strong>  {{ hotel.hotelName }}</v-card-title>
     </v-img>
-              <v-card-subtitle class="pb-0">Costo total por {{ selectedRooms }} {{ selectedRooms == 1 ? "habitación" : "habitaciones" }}: $ {{ globalFunctions.numberFormat(hotel.totalCost, 2, '.', ',') }} {{ hotel.currency }}</v-card-subtitle>
+              <v-card-subtitle class="pb-0">Costo total por {{ selectedRooms }} {{ selectedRooms == 1 ? "habitación" : "habitaciones" }}: $ {{ globalFunctions.numberFormat(Math.round(hotel.totalCost), 2, '.', ',') }} {{ hotel.currency }}</v-card-subtitle>
 
     <v-card-text class="text--primary">
       <div>{{ hotel.arrivalDate }} - {{ hotel.departureDate }}</div>
@@ -104,12 +104,20 @@
 <v-col cols="12">
         <v-row justify="center">
           <v-col
+
             cols="6"
             md="6"
           >
-      <div><strong>Reservar con costo total: $ {{ globalFunctions.numberFormat(hotel.totalCost, 2, '.', ',') }} {{ hotel.currency }}</strong></div>
+      <div><strong>Reservar con costo total: $ {{ globalFunctions.numberFormat(Math.round(hotel.totalCost), 2, '.', ',') }} {{ hotel.currency }}</strong></div>
+   <!-- locale="en_US" 
+   1) Implement Paypal IPN notifications on my paypal front implementation
+   2) Meanwhile implementing an emailSender WS is enough
+   -->
        <PayPal
-        :amount="hotel.totalCost"
+        @payment-cancelled="paypalAction"
+        @payment-authorized="payment_authorized_cb" 
+        @payment-completed="payment_completed_cb" 
+        :amount="Math.round(hotel.totalCost)"
         :currency="hotel.currency"
         :client="credentials"
         env="production">
@@ -122,10 +130,13 @@
           >
       <div
                  v-if="totalCredits < hotel.totalCost"
-      ><strong>Descontar mis $ {{ globalFunctions.numberFormat(totalCredits, 2, '.', ',') }} {{ hotel.currency }} de créditos</strong></div>
-                 <PayPal
-                 v-if="totalCredits < hotel.totalCost"
-        :amount="hotel.totalCost - totalCredits"
+      ><strong>Descontar mis $ {{ globalFunctions.numberFormat(Math.round(totalCredits), 2, '.', ',') }} {{ hotel.currency }} de créditos</strong></div>
+        <PayPal
+        @payment-cancelled="paypalAction"
+        @payment-authorized="payment_authorized_cb" 
+        @payment-completed="payment_completed_cb" 
+        v-if="totalCredits < hotel.totalCost"
+        :amount="Math.round(hotel.totalCost - totalCredits)"
         :currency="hotel.currency"
         :client="credentials"
         env="production">
@@ -570,6 +581,15 @@
           }
       },
     methods: {
+      payment_authorized_cb(res){
+          console.log("payment_authorized_cb: ", res)
+      },
+      payment_completed_cb(res){
+          console.log("payment_completed_cb: ", res)
+      },
+      paypalAction(res){
+          console.log("paypalAction: ", res)
+      },
       discountPrice(){
 
       },
@@ -591,11 +611,11 @@
             for(var i = 0; i < response.data.data.length; i++) {
               this.creditsItems.push({
                 name: response.data.data[i].creditType.TipoCredito,
-                calories: `$ ${this.globalFunctions.numberFormat(response.data.data[i].amount, 2, '.', ',')} ${response.data.data[i].currency}`,
+                calories: `$ ${this.globalFunctions.numberFormat(Math.round(response.data.data[i].amount), 2, '.', ',')} ${response.data.data[i].currency}`,
                 fat: response.data.data[i].creditType.created_at,
               })
               console.log("CRedits amount: ", this.globalFunctions.numberFormat(response.data.data[i].amount))
-              this.totalCredits += Number(response.data.data[i].amount)
+              this.totalCredits += Number(Math.round(response.data.data[i].amount))
             }
 
           })
@@ -621,7 +641,7 @@
                name: response.data.data[i].hotel,
                calories: response.data.data[i].checkIn,
                fat: response.data.data[i].checkOut,
-               protein: `$ ${this.globalFunctions.numberFormat(response.data.data[i].totalCOst, 2, '.', ',')} ${response.data.data[i].currency}`,
+               protein: `$ ${this.globalFunctions.numberFormat(Math.round(response.data.data[i].totalCOst), 2, '.', ',')} ${response.data.data[i].currency}`,
                iron: response.data.data[i].totalNights,
              })
            }
