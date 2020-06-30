@@ -589,6 +589,23 @@
       },
       paypalAction(res){
           console.log("paypalAction: ", res)
+          
+         axios.get(`${process.env.VUE_APP_HOSTVSAPI}/${process.env.VUE_APP_SENDPAYCONFIRMAIL}`,  {
+          headers: {
+            "s-m": JSON.stringify({
+              msg: "Successful PayPal payment confirmation!", 
+              ecran: "mail"
+              }),
+            'Authorization' : `Bearer ${this.ls.get('token')}`,
+          }
+        })
+          .then( response => {
+            console.log("ConfirmationPaymentMail Response: ",response)
+
+          })
+          .catch( error => {
+            console.log("ConfirmationPaymentMail Error: ",error)
+          })
       },
       discountPrice(){
 
